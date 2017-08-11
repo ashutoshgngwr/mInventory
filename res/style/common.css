@@ -1,0 +1,46 @@
+* {
+	-fx-text-fill: #FFFFFF;
+	-fx-fill: #FFFFFF;
+	-fx-font-size: 10pt;
+}
+
+.root {
+	-fx-background-image: url("/img/background.png");
+	-fx-background-size: cover;	
+}
+
+.header {
+	-fx-font-size: 24pt;
+}
+
+.sub-header {
+	-fx-font-size: 18pt;
+}
+
+TextField, PasswordField {
+	-fx-background-color: #00000000;
+	-fx-border-width: 0 0 1pt0;
+	-fx-border-color: #BBBBBBBB;
+	-fx-prompt-text-fill: #BBBBBBBB;
+}
+
+TextField:focused, PasswordField:focused {
+	-fx-border-color: #FFFFFFFF;
+}
+
+Button {
+	-fx-background-color: #00000000;
+	-fx-border-width: 1pt;
+	-fx-border-color: #BBBBBBBB;
+	-fx-text-fill: #CCCCCCCC;
+	-fx-border-radius: 5pt;
+}
+
+Button:pressed {
+	-fx-text-fill: #FFFFFF;
+	-fx-border-color: #FFFFFF;
+}
+
+.error-message {
+	-fx-fill: #f91414;
+}
