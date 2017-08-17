@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.Region?>
+
+<VBox styleClass="root" alignment="top_center"
+	fx:controller="com.github.ashutoshgngwr.minventory.MainController"
+	xmlns:fx="http://javafx.com/fxml" spacing="10">
+
+	<HBox spacing="10" alignment="top_center" styleClass="user-info-box">
+		<Text styleClass="header" fx:id="businessNameText" />
+
+		<Region HBox.hgrow="always" maxWidth="Infinity" />
+
+		<HBox spacing="10" alignment="center">
+			<Text fx:id="usernameText" />
+			<Button text="Logout" onAction="#logout" />
+		</HBox>
+
+	</HBox>
+
+	<TabPane fx:id="tabPane" tabClosingPolicy="unavailable">
+		<tabs>
+			<Tab fx:id="addTransactionTabPage" text="Add Transaction">
+				<fx:include source="/layout/AddTransactionLayout.fxml" />
+			</Tab>
+			<Tab fx:id="viewInventoryTabPage" text="View Inventory">
+				<fx:include source="/layout/ViewInventoryLayout.fxml" />
+			</Tab>
+			<Tab fx:id="logTabPage" text="Transaction Log">
+				<fx:include source="/layout/TransactionLogLayout.fxml" />
+			</Tab>
+			<Tab fx:id="manageUserTabPage" text="Manage Users">
+				<fx:include source="/layout/ManageUserLayout.fxml" />
+			</Tab>
+		</tabs>
+	</TabPane>
+
+
+	<stylesheets>
+		<URL value="@/style/common.css" />
+		<URL value="@/style/main.css" />
+	</stylesheets>
+
+</VBox>
+

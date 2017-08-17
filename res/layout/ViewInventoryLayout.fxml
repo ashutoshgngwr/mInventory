@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.cell.*?>
+
+<VBox styleClass="form-container" alignment="center"
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="viewInventoryTabPage"
+	fx:controller="com.github.ashutoshgngwr.minventory.ViewInventoryController">
+	
+	<HBox alignment="CENTER_RIGHT">
+		<Button fx:id="deleteButton" text="Delete Selected" onAction="#deleteSelected" disable="true" />
+	</HBox>
+
+	<TableView fx:id="inventoryTable">
+		<columns>
+			<TableColumn text="S.No." fx:id="snColumn" />
+			<TableColumn text="Product name" fx:id="nameColumn" />
+			<TableColumn text="Quantity" fx:id="quantityColumn" />
+		</columns>
+	</TableView>
+
+</VBox>

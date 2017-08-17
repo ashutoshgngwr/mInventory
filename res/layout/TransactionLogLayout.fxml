@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.TableColumn?>
+
+<VBox styleClass="form-container" alignment="center"
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="logTabPage"
+	fx:controller="com.github.ashutoshgngwr.minventory.TransactionLogController">
+	
+	<HBox alignment="CENTER_RIGHT">
+		<Button fx:id="deleteButton" text="Delete Selected" onAction="#deleteSelected" disable="true" />
+	</HBox>
+
+	<TableView fx:id="logTable">
+		<columns>
+			<TableColumn text="Sold/Bought" fx:id="soldBoughtColumn" />
+			<TableColumn text="Sold To/Bought From" fx:id="toFromColumn" />
+			<TableColumn text="Product name" fx:id="nameColumn" />
+			<TableColumn text="Quantity" fx:id="quantityColumn" />
+			<TableColumn text="Time" fx:id="timeColumn" />
+		</columns>
+	</TableView>
+
+</VBox>

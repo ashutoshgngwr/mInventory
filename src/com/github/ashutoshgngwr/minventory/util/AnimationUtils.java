@@ -10,7 +10,8 @@ import javafx.util.Duration;
 
 public class AnimationUtils {
 
-	public static void animateWelcome(Node welcomeText, Node formContainer, EventHandler<ActionEvent> onFinishedHandler) {
+	public static void animateWelcome(Node welcomeText, Node formContainer,
+			EventHandler<ActionEvent> onFinishedHandler) {
 		FadeTransition fadeTransition = new FadeTransition(Duration.millis(400), formContainer);
 		fadeTransition.setFromValue(1.0);
 		fadeTransition.setToValue(0.0);
@@ -19,8 +20,8 @@ public class AnimationUtils {
 		FadeTransition welcomeTextFadeTransition = new FadeTransition(Duration.millis(1000), welcomeText);
 		welcomeTextFadeTransition.setFromValue(1.0);
 		welcomeTextFadeTransition.setToValue(0.0);
-		ParallelTransition parallelTransition = 
-				new ParallelTransition(fadeTransition, translateTransition, welcomeTextFadeTransition);
+		ParallelTransition parallelTransition = new ParallelTransition(fadeTransition, translateTransition,
+				welcomeTextFadeTransition);
 		parallelTransition.setOnFinished(onFinishedHandler);
 		parallelTransition.play();
 	}

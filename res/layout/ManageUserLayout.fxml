@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.TableColumn?>
+
+<VBox styleClass="form-container" alignment="center"
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="manageUserTabPage"
+	fx:controller="com.github.ashutoshgngwr.minventory.ManageUserController">
+
+	<HBox alignment="CENTER_RIGHT" spacing="10">
+		<Button fx:id="addButton" text="Add user" onAction="#addUser" />
+		<Button fx:id="passwordButton" text="Update Password" onAction="#changePassword"
+			disable="true" />
+		<Button fx:id="deleteButton" text="Delete Selected" onAction="#deleteSelected"
+			disable="true" />
+	</HBox>
+
+	<TableView fx:id="userTable">
+		<columns>
+			<TableColumn text="Username" fx:id="usernameColumn" />
+			<TableColumn text="Privileges" fx:id="privilegesColumn" />
+		</columns>
+	</TableView>
+
+</VBox>
