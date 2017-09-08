@@ -66,6 +66,9 @@ public class AddTransactionController {
 			errorMsg = "Invalid quantity field value! Only numeric values are allowed.";
 			e.printStackTrace();
 		}
+		
+		if(productName.isEmpty())
+			errorMsg = "Product Name can not be left blank!";
 
 		if (selectedItem == null) {
 			List<Item> items = DBUtils.searchProduct(productName);
@@ -79,7 +82,7 @@ public class AddTransactionController {
 				errorMsg = (productName.isEmpty() ? "Item" : productName) + " does not exists in inventory!";
 			else if (selectedItem.getQuantity() == 0)
 				errorMsg = productName + " is out of stock!";
-			else if (selectedItem.getQuantity() < quantity)
+			else if (selectedItem.getQuantity() < Math.abs(quantity))
 				errorMsg = "Only " + selectedItem.getQuantity() + " items of this type are available in inventory.";
 		}
 
@@ -105,7 +108,6 @@ public class AddTransactionController {
 
 	private void resetForm() {
 		productNameField.setText("");
-		tradeTypeToggle.getToggles().get(0).setSelected(true);
 		toFromField.setText("");
 		quantityField.setText("");
 	}
