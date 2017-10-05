@@ -85,7 +85,6 @@ public class DatabaseHandler {
 	}
 
 	protected ResultSet executeDQLQuery(String sql, Object... args) throws SQLException {
-		System.out.println(sql); // TODO remove
 		if (this.isConnectionClosed())
 			return null;
 
@@ -95,7 +94,6 @@ public class DatabaseHandler {
 	}
 
 	protected boolean executeDMLQuery(String sql, Object... args) throws SQLException {
-		System.out.println(sql); // TODO remove
 		if (this.isConnectionClosed())
 			return false;
 

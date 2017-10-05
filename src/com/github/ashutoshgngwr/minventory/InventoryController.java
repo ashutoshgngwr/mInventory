@@ -64,7 +64,6 @@ public class InventoryController {
 			inventoryTable.getSelectionModel().clearSelection();
 		} catch (SQLException e) {
 			Infotip.showInternalError(deleteButton);
-			e.printStackTrace();
 		}
 	}
 
@@ -102,7 +101,6 @@ public class InventoryController {
 				} catch (SQLException e) {
 					Infotip.showError(deleteButton,
 							"Another product with name '" + event.getNewValue() + "' already exists in inventory.");
-					e.printStackTrace();
 				}
 			}
 		});
@@ -124,7 +122,6 @@ public class InventoryController {
 					dbHandler.update(product);
 				} catch (SQLException e) {
 					Infotip.showInternalError(deleteButton);
-					e.printStackTrace();
 				}
 			}
 		});
@@ -167,7 +164,6 @@ public class InventoryController {
 			offset = products.size() < limit ? -1 : offset + limit;
 		} catch (SQLException e) {
 			Infotip.showInternalError(deleteButton);
-			e.printStackTrace();
 		}
 	}
 }

@@ -81,7 +81,6 @@ public class User extends DatabaseHandler.DbEntry {
 
 		while (result.next()) {
 			this.id = result.getInt(DatabaseHandler.COLUMN_USER_ID);
-			System.out.println(id);
 			return true;
 		}
 		return false;

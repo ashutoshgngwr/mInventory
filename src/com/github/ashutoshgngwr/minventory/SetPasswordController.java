@@ -65,11 +65,9 @@ public class SetPasswordController {
 							formContainer.getScene().setRoot(parent);
 						}).play();
 			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
 				Infotip.showInternalError(businessNameField);
 				return;
 			} catch (SQLException | IOException e) {
-				e.printStackTrace();
 				errorMsg = "Unable to write data on hard disk.";
 			}
 		}

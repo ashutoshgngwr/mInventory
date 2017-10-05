@@ -41,7 +41,6 @@ public class Product extends DatabaseHandler.DbEntry {
 
 	private boolean selectId(DatabaseHandler dbHandler) throws SQLException {
 		ResultSet result = dbHandler.executeDQLQuery("SELECT LAST_INSERT_ID() AS " + DatabaseHandler.COLUMN_PRODUCT_ID);
-		System.out.println(result);
 		while (result.next()) {
 			this.id = result.getInt(DatabaseHandler.COLUMN_PRODUCT_ID);
 			return true;

@@ -110,7 +110,6 @@ public class AddTransactionController {
 			this.dbHandler.create(new Transaction(selectedProduct.getId(), quantity,
 					trader == null ? "" : trader, Main.user.getUsername()));
 		} catch (SQLException e) {
-			e.printStackTrace();
 			Infotip.showInternalError(productNameField);
 			return;
 		}

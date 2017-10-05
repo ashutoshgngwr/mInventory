@@ -55,7 +55,6 @@ public class ManageUserController {
 			loadUsers();
 			createUserDialog.reset();
 		} catch (SQLException e) {
-			e.printStackTrace();
 			Infotip.showInternalError(addUserButton);
 		}
 	}
@@ -82,7 +81,6 @@ public class ManageUserController {
 			}
 		} catch (SQLException e) {
 			Infotip.showInternalError(changePasswordButton);
-			e.printStackTrace();
 		}
 
 		changePasswordDialog.reset();
@@ -105,7 +103,6 @@ public class ManageUserController {
 			userTable.getItems().remove(user);
 		} catch (SQLException e) {
 			Infotip.showInternalError(deleteUserButton);
-			e.printStackTrace();
 		}
 	}
 
@@ -122,8 +119,6 @@ public class ManageUserController {
 		userTable.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> {
 			boolean disabled = newValue == null;
 			deleteUserButton.setDisable(disabled || newValue.isAdmin());
-			System.out.println(Main.user.getId());
-			System.out.println(newValue.getId());
 			changePasswordButton.setDisable(disabled || Main.user.getId() != newValue.getId());
 		});
 
