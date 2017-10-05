@@ -8,7 +8,7 @@
 <?import javafx.scene.control.TableColumn?>
 
 <VBox styleClass="form-container" alignment="center"
-	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="logTabPage"
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="logPage"
 	fx:controller="com.github.ashutoshgngwr.minventory.TransactionLogController">
 	
 	<HBox alignment="CENTER_RIGHT">
@@ -17,11 +17,12 @@
 
 	<TableView fx:id="logTable">
 		<columns>
-			<TableColumn text="Sold/Bought" fx:id="soldBoughtColumn" />
-			<TableColumn text="Sold To/Bought From" fx:id="toFromColumn" />
+			<TableColumn text="Sold/Bought" fx:id="tradeTypeColumn" />
+			<TableColumn text="To/From" fx:id="traderColumn" />
 			<TableColumn text="Product name" fx:id="nameColumn" />
 			<TableColumn text="Quantity" fx:id="quantityColumn" />
 			<TableColumn text="Time" fx:id="timeColumn" />
+			<TableColumn text="User" fx:id="userColumn" />
 		</columns>
 	</TableView>
 

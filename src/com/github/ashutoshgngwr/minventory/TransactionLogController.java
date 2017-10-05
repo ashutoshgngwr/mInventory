@@ -3,11 +3,13 @@ package com.github.ashutoshgngwr.minventory;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.github.ashutoshgngwr.minventory.MainController.OnTabChangeListener;
 import com.github.ashutoshgngwr.minventory.controls.Infotip;
-import com.github.ashutoshgngwr.minventory.controls.OnTabChangeListener;
-import com.github.ashutoshgngwr.minventory.models.LogItem;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.database.Product;
+import com.github.ashutoshgngwr.minventory.database.Transaction;
 
+import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -22,103 +24,23 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.VBox;
-import javafx.util.converter.IntegerStringConverter;
+import javafx.util.converter.LongStringConverter;
 
 public class TransactionLogController {
 
 	@FXML
-	private VBox logTabPage;
-	@FXML
-	private TableView<LogItem> logTable;
-	@FXML
-	private TableColumn<LogItem, String> toFromColumn, nameColumn, timeColumn, soldBoughtColumn;
-	@FXML
-	private TableColumn<LogItem, Integer> quantityColumn;
-	@FXML
 	private Button deleteButton;
-
-	private int offset = 0, limit = 20;
-
 	@FXML
-	public void initialize() {
-		if (Main.user.getAccessLevel() > 0) {
-			logTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-			logTable.setEditable(true);
+	private VBox logPage;
+	@FXML
+	private TableView<Transaction> logTable;
+	private int offset = 0, limit = 50;
+	@FXML
+	private TableColumn<Transaction, Long> quantityColumn;
+	@FXML
+	private TableColumn<Transaction, String> traderColumn, nameColumn, timeColumn, tradeTypeColumn, userColumn;
 
-			if (Main.user.getAccessLevel() > 1) {
-				logTable.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> {
-					deleteButton.setDisable(logTable.getSelectionModel().getSelectedItems().isEmpty());
-				});
-			}
-		}
-		nameColumn.setCellValueFactory(new PropertyValueFactory<LogItem, String>("name"));
-		nameColumn.prefWidthProperty().bind(logTable.widthProperty().multiply(0.3));
-
-		toFromColumn.setCellValueFactory(new PropertyValueFactory<LogItem, String>("toFrom"));
-		toFromColumn.prefWidthProperty().bind(logTable.widthProperty().multiply(0.3));
-		toFromColumn.setCellFactory(TextFieldTableCell.forTableColumn());
-		toFromColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<LogItem, String>>() {
-
-			@Override
-			public void handle(CellEditEvent<LogItem, String> event) {
-				try {
-					LogItem item = event.getRowValue();
-					item.setToFrom(event.getNewValue());
-					DBUtils.updateLogTable(item.getDBTimestamp(), "to_from", event.getNewValue());
-				} catch (SQLException e) {
-					Infotip.showInternalError(deleteButton);
-					e.printStackTrace();
-				}
-			}
-		});
-
-		timeColumn.setCellValueFactory(new PropertyValueFactory<LogItem, String>("time"));
-		timeColumn.prefWidthProperty().bind(logTable.widthProperty().multiply(0.2));
-
-		soldBoughtColumn.setCellValueFactory(new PropertyValueFactory<LogItem, String>("soldBought"));
-		soldBoughtColumn.prefWidthProperty().bind(logTable.widthProperty().multiply(0.097));
-
-		quantityColumn.setCellValueFactory(new PropertyValueFactory<LogItem, Integer>("quantity"));
-		quantityColumn.prefWidthProperty().bind(logTable.widthProperty().multiply(0.1));
-		quantityColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-		quantityColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<LogItem, Integer>>() {
-
-			@Override
-			public void handle(CellEditEvent<LogItem, Integer> event) {
-				if (event.getNewValue() == null) {
-					event.getRowValue().setQuantity(0);
-					logTable.refresh();
-					return;
-				}
-				try {
-					LogItem item = event.getRowValue();
-					item.setQuantity(event.getNewValue());
-					DBUtils.updateLogTable(item.getDBTimestamp(), "quantity", event.getNewValue().toString());
-				} catch (SQLException e) {
-					Infotip.showInternalError(deleteButton);
-					e.printStackTrace();
-				}
-			}
-		});
-
-		addData();
-		ScrollBar sBar = (ScrollBar) logTable.lookup(".scroll-bar:vertical");
-		if (sBar != null)
-			sBar.valueProperty().addListener((obs, oldValue, newValue) -> {
-				if (newValue.doubleValue() >= sBar.getMax()) {
-					addData();
-				}
-			});
-
-		logTabPage.setUserData(new OnTabChangeListener() {
-			@Override
-			public void onTabChanged() {
-				offset = 0;
-				logTable.getItems().clear();
-				addData();
-			}
-		});
-	}
+	private DatabaseHandler dbHandler = DatabaseHandler.getInstance();
 
 	@FXML
 	public void deleteSelected() {
@@ -127,33 +49,129 @@ public class TransactionLogController {
 		alert.showAndWait();
 
 		if (alert.getResult() != ButtonType.YES) {
-			logTable.getSelectionModel().clearSelection();
+			this.logTable.getSelectionModel().clearSelection();
 			return;
 		}
 		try {
-			for (LogItem item : logTable.getSelectionModel().getSelectedItems()) {
-				DBUtils.deleteRow("log", "time", item.getDBTimestamp());
-				logTable.getItems().remove(item);
+			for (Transaction transaction : this.logTable.getSelectionModel().getSelectedItems()) {
+				Product affectedProduct = this.dbHandler.getProduct(transaction.getProductId());
+				affectedProduct.setQuantity(affectedProduct.getQuantity() - transaction.getQuantity());
+				this.dbHandler.update(affectedProduct);
+				this.dbHandler.delete(transaction);
+				this.logTable.getItems().remove(transaction);
 			}
 
-			logTable.getSelectionModel().clearSelection();
+			this.logTable.getSelectionModel().clearSelection();
 		} catch (SQLException e) {
-			Infotip.showInternalError(deleteButton);
+			Infotip.showInternalError(this.deleteButton);
 			e.printStackTrace();
 		}
 	}
 
-	private void addData() {
+	@FXML
+	public void initialize() {
+		if (Main.user.getAccessLevel() > 0) {
+			this.logTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+			this.logTable.setEditable(true);
 
-		if (offset == -1)
+			if (Main.user.getAccessLevel() > 1) {
+				this.logTable.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> {
+					this.deleteButton.setDisable(this.logTable.getSelectionModel().getSelectedItems().isEmpty());
+				});
+			}
+		}
+		this.nameColumn.setCellValueFactory(new PropertyValueFactory<Transaction, String>("productName"));
+		this.nameColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.23));
+
+		this.traderColumn.setCellValueFactory(new PropertyValueFactory<Transaction, String>("trader"));
+		this.traderColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.23));
+		this.traderColumn.setCellFactory(TextFieldTableCell.forTableColumn());
+		this.traderColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Transaction, String>>() {
+
+			@Override
+			public void handle(CellEditEvent<Transaction, String> event) {
+				try {
+					Transaction transaction = event.getRowValue();
+					transaction.setTrader(event.getNewValue());
+					dbHandler.update(transaction);
+				} catch (SQLException e) {
+					Infotip.showInternalError(deleteButton);
+					e.printStackTrace();
+				}
+			}
+		});
+
+		this.timeColumn.setCellValueFactory(new PropertyValueFactory<Transaction, String>("time"));
+		this.timeColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.23));
+
+		this.tradeTypeColumn.setCellValueFactory(new PropertyValueFactory<Transaction, String>("tradeType"));
+		this.tradeTypeColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.1));
+
+		this.userColumn.setCellValueFactory(new PropertyValueFactory<Transaction, String>("user"));
+		this.tradeTypeColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.1));
+
+		this.quantityColumn.setCellValueFactory(new PropertyValueFactory<Transaction, Long>("quantity"));
+		this.quantityColumn.prefWidthProperty().bind(this.logTable.widthProperty().multiply(0.1));
+		this.quantityColumn.setCellFactory(TextFieldTableCell.forTableColumn(new LongStringConverter()));
+		this.quantityColumn.setOnEditCommit(new EventHandler<TableColumn.CellEditEvent<Transaction, Long>>() {
+
+			@Override
+			public void handle(CellEditEvent<Transaction, Long> event) {
+				try {
+					Transaction transaction = event.getRowValue();
+					Product affectedProduct = dbHandler.getProduct(transaction.getProductId());
+					if (event.getNewValue() == null) {
+						transaction.setQuantity(event.getOldValue());
+						return;
+					}
+					affectedProduct.setQuantity(affectedProduct.getQuantity() + event.getNewValue() - event.getOldValue());
+					transaction.setQuantity(event.getNewValue());
+					dbHandler.update(affectedProduct);
+					dbHandler.update(transaction);
+				} catch (SQLException e) {
+					Infotip.showInternalError(deleteButton);
+					e.printStackTrace();
+				}
+			}
+		});
+
+		this.logPage.setUserData(new OnTabChangeListener() {
+			@Override
+			public void onTabChanged() {
+				offset = 0;
+				logTable.getItems().clear();
+				addData();
+			}
+		});
+
+		this.addData();
+		this.logTable.getItems().addListener(new ListChangeListener<Transaction>() {
+			@Override
+			public void onChanged(Change<? extends Transaction> c) {
+				ScrollBar sBar = (ScrollBar) logTable.lookup(".scroll-bar:vertical");
+
+				if (sBar == null)
+					return;
+
+				sBar.valueProperty().addListener((observable, oldValue, newValue) -> {
+					if (newValue.doubleValue() == sBar.getMax())
+						addData();
+				});
+				logTable.getItems().removeListener(this);
+			}
+		});
+	}
+
+	private void addData() {
+		if (this.offset == -1)
 			return;
 
 		try {
-			List<LogItem> items = DBUtils.listLog(offset, limit);
-			logTable.getItems().addAll(items);
-			offset = items.size() < limit ? -1 : offset + limit;
+			List<Transaction> transactions = this.dbHandler.listTransactions(this.offset, this.limit);
+			this.logTable.getItems().addAll(transactions);
+			this.offset = transactions.size() < this.limit ? -1 : this.offset + this.limit;
 		} catch (SQLException e) {
-			Infotip.showInternalError(deleteButton);
+			Infotip.showInternalError(this.deleteButton);
 			e.printStackTrace();
 		}
 	}

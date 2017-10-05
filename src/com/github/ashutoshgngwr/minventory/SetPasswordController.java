@@ -3,15 +3,13 @@ package com.github.ashutoshgngwr.minventory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.github.ashutoshgngwr.minventory.controls.Infotip;
-import com.github.ashutoshgngwr.minventory.util.AnimationUtils;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.util.Animation;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -25,11 +23,11 @@ public class SetPasswordController {
 	@FXML
 	private GridPane formContainer;
 	@FXML
-	private Text welcomeText;
+	private PasswordField newPasswordField, confirmPasswordField;
 	@FXML
 	private TextField newUsernameField, businessNameField;
 	@FXML
-	private PasswordField newPasswordField, confirmPasswordField;
+	private Text welcomeText;
 
 	@FXML
 	public void saveAuthenticationDetails(ActionEvent event) {
@@ -50,13 +48,9 @@ public class SetPasswordController {
 
 		if (errorMsg == null) {
 			try {
-				Class.forName("org.h2.Driver");
-				DBUtils.setConnection(
-						DriverManager.getConnection("jdbc:h2:./data/all." + Main.APP_NAME, username, password));
-
-				DBUtils.createTables();
-				DBUtils.setAdminUserPrivileges();
-				Main.user = DBUtils.getCurrentUser(username);
+				DatabaseHandler dbHandler = DatabaseHandler.connect(username, password);
+				dbHandler.setAdminUserPrivileges();
+				Main.user = dbHandler.getCurrentUser(username);
 
 				File propertiesFile = new File(Main.PROPERTIES_FILE_NAME);
 				propertiesFile.createNewFile();
@@ -65,20 +59,15 @@ public class SetPasswordController {
 				Main.properties.store(new FileOutputStream(propertiesFile),
 						"####### AUTO-GENERATED FILE ########\n######## DO NOT MODIFY ########");
 
-				AnimationUtils.animateWelcome(welcomeText, formContainer, new EventHandler<ActionEvent>() {
-					@Override
-					public void handle(ActionEvent event) {
-						try {
-							Parent parent = FXMLLoader.load(getClass().getResource("/layout/MainLayout.fxml"));
+				final Parent parent = FXMLLoader.load(getClass().getResource("/layout/MainLayout.fxml"));
+				new Animation().slideOutRight(welcomeText, 600).fadeOut(welcomeText, 650).fadeOut(formContainer, 650)
+						.onFinish((ev3nt) -> {
 							formContainer.getScene().setRoot(parent);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				});
+						}).play();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
-				errorMsg = "Internal error occured! Please close this window.";
+				Infotip.showInternalError(businessNameField);
+				return;
 			} catch (SQLException | IOException e) {
 				e.printStackTrace();
 				errorMsg = "Unable to write data on hard disk.";

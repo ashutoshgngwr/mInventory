@@ -18,18 +18,18 @@ Text, Label, TextField, PasswordField, AutoCompleteTextField {
 }
 
 TextField, PasswordField, AutoCompleteTextField {
-	-fx-background-color: #00000000;
+	-fx-background-color: transparent;
 	-fx-border-width: 0 0 1pt 0;
-	-fx-border-color: #BBBBBBBB;
-	-fx-prompt-text-fill: #BBBBBBBB;
+	-fx-border-color: #BBBBBB;
+	-fx-prompt-text-fill: #BBBBBB;
 }
 
 TextField:focused, PasswordField:focused, AutoCompleteTextField:focused {
-	-fx-border-color: #FFFFFFFF;
+	-fx-border-color: #FFFFFF;
 }
 
 Button {
-	-fx-background-color: #00000000;
+	-fx-background-color: transparent;
 	-fx-border-width: 1pt;
 	-fx-border-color: #DFDFDF;
 	-fx-text-fill: #DFDFDF;
@@ -47,14 +47,14 @@ Button:pressed {
 
 .radio-button .radio {
     -fx-background-insets: 0;
-    -fx-background-color: #00000000;
+    -fx-background-color: transparent;
     -fx-border-width: 1pt;
 	-fx-border-color: #FFFFFF;
 	-fx-border-radius: 50%;
 }
 
 .radio-button .dot {
-  -fx-mark-highlight-color: #00000000;
+  -fx-mark-highlight-color: transparent;
   -fx-mark-color: #FFFFFF;
 }
 
@@ -86,18 +86,18 @@ Button:pressed {
 }
 
 .table-view .table-cell {
-    -fx-text-fill: #DFDFDFDF;
+    -fx-text-fill: #DFDFDF;
     -fx-alignment: center;
 }
 
 .table-row-cell {
-    -fx-background-color: #00000000;
+    -fx-background-color: transparent;
     -fx-background-insets: 0, 0 0 1 0;
     -fx-padding: 0; 
 }
 
 .table-row-cell:odd {
-    -fx-background-color: #22222222;
+    -fx-background-color: rgba(0, 0, 0, 0.2);
     -fx-background-insets: 0, 0 0 1 0;
     -fx-padding: 0;
 }
@@ -108,8 +108,13 @@ Button:pressed {
     -fx-background-radius: 1;
 }
 
+.table-view .column-header-background .filler {
+  -fx-background-color: none;
+}
+
 .tab-header-background, .tab {
-    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-color: #FFFFFF;
+    -fx-opacity: 0.85;
     -fx-padding: 10pt;
 }
 
@@ -129,5 +134,35 @@ Button:pressed {
 }
 
 .tab:selected .focus-indicator {
-     -fx-border-width: 0;
+    -fx-border-width: 0;
+}
+
+.scroll-bar:horizontal, .scroll-bar:vertical {
+	-fx-background-color:transparent;
+}
+
+.increment-button , .decrement-button {
+	-fx-opacity: 0;
+}
+
+.scroll-bar:horizontal .track, .scroll-bar:vertical .track {
+	-fx-background-color: none;
+	-fx-background-radius: 0em;
+}
+
+.scroll-bar:horizontal .thumb, .scroll-bar:vertical .thumb {
+	-fx-background-insets: 0, 0, 0;
+	-fx-background-radius: 2em;
+	-fx-background-color: #FFFFFF;
+	-fx-opacity: 0.3;
+}
+
+.scroll-bar:horizontal:hover .track, .scroll-bar:horizontal:pressed .track,
+.scroll-bar:vertical:hover .track, .scroll-bar:vertical:pressed .track{
+	-fx-background-radius: 0em;
+}
+
+.scroll-bar .thumb:hover, .scroll-bar .thumb:pressed {
+	-fx-background-color: #FFFFFF;
+	-fx-opacity: 0.5;
 }

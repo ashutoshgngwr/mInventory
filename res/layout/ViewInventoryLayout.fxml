@@ -7,8 +7,8 @@
 <?import javafx.scene.control.cell.*?>
 
 <VBox styleClass="form-container" alignment="center"
-	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="viewInventoryTabPage"
-	fx:controller="com.github.ashutoshgngwr.minventory.ViewInventoryController">
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="inventoryPage"
+	fx:controller="com.github.ashutoshgngwr.minventory.InventoryController">
 	
 	<HBox alignment="CENTER_RIGHT">
 		<Button fx:id="deleteButton" text="Delete Selected" onAction="#deleteSelected" disable="true" />
@@ -17,7 +17,7 @@
 	<TableView fx:id="inventoryTable">
 		<columns>
 			<TableColumn text="S.No." fx:id="snColumn" />
-			<TableColumn text="Product name" fx:id="nameColumn" />
+			<TableColumn text="Product Name" fx:id="nameColumn" />
 			<TableColumn text="Quantity" fx:id="quantityColumn" />
 		</columns>
 	</TableView>

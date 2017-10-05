@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Properties;
 
-import com.github.ashutoshgngwr.minventory.models.User;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.database.User;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -19,11 +20,15 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	public static final String APP_NAME = "mInventory";
-	public static final String PROPERTY_BUSINESS_NAME = "b_name";
 	public static final String PROPERTIES_FILE_NAME = "./data/" + APP_NAME + ".properties";
+	public static final String PROPERTY_BUSINESS_NAME = "b_name";
 
 	protected static Properties properties = new Properties();
 	protected static User user;
+
+	public static void main(String[] args) {
+		launch(args);
+	}
 
 	@Override
 	public void start(Stage primaryStage) throws IOException {
@@ -39,6 +44,7 @@ public class Main extends Application {
 		Scene scene = new Scene(root, 720, 640);
 		primaryStage.setTitle(APP_NAME);
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/img/icon.png")));
+		primaryStage.setMaximized(true);
 		primaryStage.setMinWidth(scene.getWidth());
 		primaryStage.setMinHeight(scene.getHeight());
 		primaryStage.setScene(scene);
@@ -46,11 +52,9 @@ public class Main extends Application {
 	}
 
 	@Override
-	public void stop() {
-		DBUtils.close();
-	}
-
-	public static void main(String[] args) {
-		launch(args);
+	public void stop() throws SQLException {
+		try {
+			DatabaseHandler.getInstance().closeConnection();
+		} catch (IllegalStateException ignore) {}
 	}
 }

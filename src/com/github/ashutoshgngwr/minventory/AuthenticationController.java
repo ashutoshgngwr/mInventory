@@ -1,15 +1,13 @@
 package com.github.ashutoshgngwr.minventory;
 
 import java.io.IOException;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.github.ashutoshgngwr.minventory.controls.Infotip;
-import com.github.ashutoshgngwr.minventory.util.AnimationUtils;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.util.Animation;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -23,47 +21,45 @@ public class AuthenticationController {
 	@FXML
 	private GridPane formContainer;
 	@FXML
-	private Text welcomeText;
+	private PasswordField passwordField;
+	@FXML
+	private GridPane root;
 	@FXML
 	private TextField usernameField;
 	@FXML
-	private PasswordField passwordField;
+	private Text welcomeText;
 
 	@FXML
 	public void authenticate(ActionEvent event) {
-		String errorMsg = null;
 		try {
-			Class.forName("org.h2.Driver");
-			DBUtils.setConnection(DriverManager.getConnection("jdbc:h2:./data/all." + Main.APP_NAME,
-					usernameField.getText().trim(), passwordField.getText().trim()));
-
-			DBUtils.createTables();
-			Main.user = DBUtils.getCurrentUser(usernameField.getText().trim());
+			DatabaseHandler dbHandler = DatabaseHandler.connect(usernameField.getText().trim(),
+					passwordField.getText().trim());
+			Main.user = dbHandler.getCurrentUser(usernameField.getText().trim());
 
 			if (Main.user.getAccessLevel() > 1)
-				DBUtils.cleanLogTable();
+				dbHandler.cleanTables();
 
-			AnimationUtils.animateWelcome(welcomeText, formContainer, new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent event) {
-					try {
-						Parent parent = FXMLLoader.load(getClass().getResource("/layout/MainLayout.fxml"));
+			final Parent parent = FXMLLoader.load(getClass().getResource("/layout/MainLayout.fxml"));
+
+			new Animation().slideOutRight(welcomeText, 600).fadeOut(welcomeText, 650).fadeOut(formContainer, 650)
+					.onFinish((ev3nt) -> {
 						formContainer.getScene().setRoot(parent);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			});
+					}).play();
+
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			errorMsg = "Internal error occured! Please close this window.";
+			Infotip.showError(usernameField, "Internal error occured! Please close this window.");
 		} catch (SQLException e) {
 			e.printStackTrace();
-			errorMsg = "Invalid username/password combination!";
+			Infotip.showError(usernameField, "Invalid username/password combination!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			Infotip.showError(usernameField, "Internal error occured! Please close this window.");
 		}
+	}
 
-		if (errorMsg != null) {
-			Infotip.showError(usernameField, errorMsg);
-		}
+	@FXML
+	public void initialize() {
+		new Animation().fadeIn(root, 150).play();
 	}
 }

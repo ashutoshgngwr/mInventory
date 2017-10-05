@@ -5,8 +5,9 @@ import java.util.List;
 
 import com.github.ashutoshgngwr.minventory.controls.AutoCompleteTextField;
 import com.github.ashutoshgngwr.minventory.controls.Infotip;
-import com.github.ashutoshgngwr.minventory.models.Item;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.database.Product;
+import com.github.ashutoshgngwr.minventory.database.Transaction;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -19,18 +20,20 @@ import javafx.scene.layout.GridPane;
 
 public class AddTransactionController {
 
+	int tradeType = 0;
 	@FXML
-	private GridPane addTransactionTabPage;
-	@FXML
-	private TextField toFromField, quantityField;
+	private GridPane addTransactionPage;
 	@FXML
 	private AutoCompleteTextField productNameField;
 	@FXML
-	private Label toFromLabel;
+	private TextField traderField, quantityField;
+	@FXML
+	private Label traderLabel;
+
 	@FXML
 	private ToggleGroup tradeTypeToggle;
-
-	int tradeType = 0;
+	
+	private DatabaseHandler dbHandler = DatabaseHandler.getInstance();
 
 	@FXML
 	public void initialize() {
@@ -41,13 +44,13 @@ public class AddTransactionController {
 			public void changed(ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) {
 				if (tradeType == 0) {
 					tradeType = 1;
-					toFromLabel.setText("Bought From:");
-					toFromField.setPromptText("Who sold this product?");
+					traderLabel.setText("Bought From:");
+					traderField.setPromptText("Who sold this product?");
 					quantityField.setPromptText("How much items did you buy?");
 				} else {
 					tradeType = 0;
-					toFromLabel.setText("Sold To:");
-					toFromField.setPromptText("Who bought this product?");
+					traderLabel.setText("Sold To:");
+					traderField.setPromptText("Who bought this product?");
 					quantityField.setPromptText("How much items did they buy?");
 				}
 			}
@@ -56,59 +59,69 @@ public class AddTransactionController {
 
 	@FXML
 	public void saveTransaction() throws SQLException {
-		String productName = productNameField.getText().trim(), toFrom = toFromField.getText(), errorMsg = null;
-		Item selectedItem = productNameField.getSelectedItem();
-		int quantity = 0;
+		String productName = this.productNameField.getText(), trader = this.traderField.getText();
+		Product selectedProduct = this.productNameField.getSelectedProduct();
+		long quantity = 0;
 
-		try {
-			quantity = (tradeType == 0 ? -1 : 1) * Integer.valueOf(quantityField.getText());
-		} catch (NumberFormatException e) {
-			errorMsg = "Invalid quantity field value! Only numeric values are allowed.";
-			e.printStackTrace();
+		if (productName == null || productName.isEmpty()) {
+			Infotip.showError(productNameField, "Product Name can not be left blank!");
+			return;
 		}
 		
-		if(productName.isEmpty())
-			errorMsg = "Product Name can not be left blank!";
-
-		if (selectedItem == null) {
-			List<Item> items = DBUtils.searchProduct(productName);
-
-			if (items.size() == 1 && items.get(0).getName().equalsIgnoreCase(productName))
-				selectedItem = items.get(0);
+		productName = productName.trim();
+		try {
+			quantity = Integer.valueOf(quantityField.getText());
+			if(quantity < 0)
+				throw new NumberFormatException();
+		} catch (NumberFormatException e) {
+			Infotip.showError(productNameField, "Invalid quantity field value! Only positive numeric values are allowed.");
+			return;
 		}
+		
+		if (this.tradeType == 0) {
+			if (selectedProduct == null) {
+				List<Product> products = dbHandler.searchProduct(productName);
 
-		if (errorMsg == null && tradeType == 0) {
-			if (selectedItem == null)
-				errorMsg = (productName.isEmpty() ? "Item" : productName) + " does not exists in inventory!";
-			else if (selectedItem.getQuantity() == 0)
-				errorMsg = productName + " is out of stock!";
-			else if (selectedItem.getQuantity() < Math.abs(quantity))
-				errorMsg = "Only " + selectedItem.getQuantity() + " items of this type are available in inventory.";
-		}
-
-		if (errorMsg == null) {
-			try {
-				if (selectedItem == null)
-					selectedItem = DBUtils.addItem(productName);
-
-				DBUtils.addLog(selectedItem.getId(), toFrom, quantity);
-			} catch (SQLException e) {
-				e.printStackTrace();
-				errorMsg = "An internal error occurred! Please restart " + Main.APP_NAME + ".";
+				if (products.size() != 1 || products.get(0).getName().equalsIgnoreCase(productName)) {
+					Infotip.showError(productNameField, productName + " does not exist in inventory!");
+					return;
+				}
+				
+				selectedProduct = products.get(0);
 			}
+			
+			if (selectedProduct.getQuantity() == 0 || selectedProduct.getQuantity() < quantity) {
+				Infotip.showError(productNameField, productName + ": Too few items left in stock!");
+				return;
+			}
+			
+			quantity = -quantity;
 		}
 
-		if (errorMsg != null) {
-			Infotip.showError(productNameField, errorMsg);
-		} else {
-			Infotip.showSuccess(productNameField, "Transaction record added successfully.");
-			resetForm();
+		try {
+			if (selectedProduct == null) {
+				selectedProduct = new Product(productName, quantity);
+				this.dbHandler.create(selectedProduct);
+			} else {
+				selectedProduct.setQuantity(selectedProduct.getQuantity() + quantity);
+				this.dbHandler.update(selectedProduct);
+			}
+
+			this.dbHandler.create(new Transaction(selectedProduct.getId(), quantity,
+					trader == null ? "" : trader, Main.user.getUsername()));
+		} catch (SQLException e) {
+			e.printStackTrace();
+			Infotip.showInternalError(productNameField);
+			return;
 		}
+
+		Infotip.showSuccess(productNameField, "Transaction record added successfully.");
+		resetForm();
 	}
 
 	private void resetForm() {
-		productNameField.setText("");
-		toFromField.setText("");
-		quantityField.setText("");
+		productNameField.setText(null);
+		traderField.setText(null);
+		quantityField.setText(null);
 	}
 }

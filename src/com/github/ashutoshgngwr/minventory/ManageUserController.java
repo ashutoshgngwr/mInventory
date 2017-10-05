@@ -5,8 +5,8 @@ import java.sql.SQLException;
 import com.github.ashutoshgngwr.minventory.controls.ChangePasswordDialog;
 import com.github.ashutoshgngwr.minventory.controls.CreateUserDialog;
 import com.github.ashutoshgngwr.minventory.controls.Infotip;
-import com.github.ashutoshgngwr.minventory.models.User;
-import com.github.ashutoshgngwr.minventory.util.DBUtils;
+import com.github.ashutoshgngwr.minventory.database.DatabaseHandler;
+import com.github.ashutoshgngwr.minventory.database.User;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -21,44 +21,18 @@ import javafx.scene.layout.VBox;
 public class ManageUserController {
 
 	@FXML
-	private VBox manageUserTabPage;
-	@FXML
-	private Button addButton, deleteButton, passwordButton;
-	@FXML
-	private TableView<User> userTable;
-	@FXML
-	private TableColumn<User, String> usernameColumn, privilegesColumn;
-
+	private Button addUserButton, deleteUserButton, changePasswordButton;
 	private ChangePasswordDialog changePasswordDialog = new ChangePasswordDialog();
 	private CreateUserDialog createUserDialog = new CreateUserDialog();
+	@FXML
+	private VBox manageUserPage;
 
 	@FXML
-	public void initialize() {
-		usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-		usernameColumn.prefWidthProperty().bind(userTable.widthProperty().multiply(0.498));
-
-		privilegesColumn.setCellValueFactory(new PropertyValueFactory<>("privileges"));
-		privilegesColumn.prefWidthProperty().bind(userTable.widthProperty().multiply(0.499));
-
-		addButton.setDisable(Main.user.getAccessLevel() < 3);
-
-		userTable.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> {
-			boolean disabled = userTable.getSelectionModel().getSelectedItems().isEmpty();
-			deleteButton.setDisable(Main.user.getAccessLevel() != 3 || disabled);
-			passwordButton.setDisable(newValue != null && Main.user.getId() != newValue.getId() || disabled);
-		});
-
-		loadUsers();
-	}
-
-	private void loadUsers() {
-		try {
-			userTable.getItems().clear();
-			userTable.getItems().addAll(DBUtils.listUsers());
-		} catch (SQLException e) {
-			Infotip.showInternalError(addButton);
-		}
-	}
+	private TableColumn<User, String> usernameColumn, privilegesColumn;
+	@FXML
+	private TableView<User> userTable;
+	
+	private DatabaseHandler dbHandler = DatabaseHandler.getInstance();
 
 	@FXML
 	public void addUser() {
@@ -69,19 +43,20 @@ public class ManageUserController {
 
 		String errorMsg;
 		if ((errorMsg = createUserDialog.validateInput()) != null) {
-			Infotip.showError(addButton, errorMsg);
+			Infotip.showError(addUserButton, errorMsg);
 			createUserDialog.resetPasswordFields();
 			return;
 		}
 
 		try {
-			DBUtils.createUser(createUserDialog.getUsername(), createUserDialog.getPassword(),
-					createUserDialog.getAccessLevel());
-			Infotip.showSuccess(addButton, "User added successfully.");
+			dbHandler.create(new User(createUserDialog.getUsername(), createUserDialog.getPassword(),
+					createUserDialog.getAccessLevel()));
+			Infotip.showSuccess(addUserButton, "User added successfully.");
 			loadUsers();
+			createUserDialog.reset();
 		} catch (SQLException e) {
 			e.printStackTrace();
-			Infotip.showInternalError(addButton);
+			Infotip.showInternalError(addUserButton);
 		}
 	}
 
@@ -93,19 +68,20 @@ public class ManageUserController {
 			return;
 
 		if (!changePasswordDialog.matchPasswords()) {
-			Infotip.showError(passwordButton, "Passwords did not match!");
+			Infotip.showError(changePasswordButton, "Passwords did not match!");
 			return;
 		}
 
 		try {
 			if (changePasswordDialog.getNewPassword().length() < 8)
-				Infotip.showError(passwordButton, "Passwords should be atleast 8 characters long.");
+				Infotip.showError(changePasswordButton, "Passwords should be atleast 8 characters long.");
 			else {
-				DBUtils.changePassword(changePasswordDialog.getNewPassword());
-				Infotip.showSuccess(passwordButton, "Password was changed successfully!");
+				Main.user.setPassword(changePasswordDialog.getNewPassword());
+				dbHandler.update(Main.user);
+				Infotip.showSuccess(changePasswordButton, "Password was changed successfully!");
 			}
 		} catch (SQLException e) {
-			Infotip.showInternalError(passwordButton);
+			Infotip.showInternalError(changePasswordButton);
 			e.printStackTrace();
 		}
 
@@ -117,11 +93,6 @@ public class ManageUserController {
 		User user = userTable.getSelectionModel().getSelectedItem();
 		userTable.getSelectionModel().clearSelection();
 
-		if (user.isAdmin()) {
-			Infotip.showError(deleteButton, "Admin user can not be deleted!");
-			return;
-		}
-
 		Alert alert = new Alert(AlertType.CONFIRMATION, "Do you want to delete user '" + user.getUsername() + "'?",
 				ButtonType.YES, ButtonType.NO);
 		alert.showAndWait();
@@ -130,11 +101,42 @@ public class ManageUserController {
 			return;
 
 		try {
-			DBUtils.deleteUser(user.getUsername());
+			this.dbHandler.delete(user);
 			userTable.getItems().remove(user);
 		} catch (SQLException e) {
-			Infotip.showInternalError(deleteButton);
+			Infotip.showInternalError(deleteUserButton);
 			e.printStackTrace();
+		}
+	}
+
+	@FXML
+	public void initialize() {
+		usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+		usernameColumn.prefWidthProperty().bind(userTable.widthProperty().multiply(0.498));
+
+		privilegesColumn.setCellValueFactory(new PropertyValueFactory<>("privileges"));
+		privilegesColumn.prefWidthProperty().bind(userTable.widthProperty().multiply(0.498));
+
+		addUserButton.setDisable(!Main.user.isAdmin());
+
+		userTable.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> {
+			boolean disabled = newValue == null;
+			deleteUserButton.setDisable(disabled || newValue.isAdmin());
+			System.out.println(Main.user.getId());
+			System.out.println(newValue.getId());
+			changePasswordButton.setDisable(disabled || Main.user.getId() != newValue.getId());
+		});
+
+		this.loadUsers();
+	}
+
+	private void loadUsers() {
+		try {
+			userTable.getItems().clear();
+			userTable.getItems().addAll(this.dbHandler.listAllUsers());
+			userTable.refresh();
+		} catch (SQLException e) {
+			Infotip.showInternalError(addUserButton);
 		}
 	}
 }

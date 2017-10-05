@@ -8,14 +8,14 @@
 <?import javafx.scene.control.TableColumn?>
 
 <VBox styleClass="form-container" alignment="center"
-	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="manageUserTabPage"
+	xmlns:fx="http://javafx.com/fxml" spacing="10" fx:id="manageUserPage"
 	fx:controller="com.github.ashutoshgngwr.minventory.ManageUserController">
 
 	<HBox alignment="CENTER_RIGHT" spacing="10">
-		<Button fx:id="addButton" text="Add user" onAction="#addUser" />
-		<Button fx:id="passwordButton" text="Update Password" onAction="#changePassword"
+		<Button fx:id="addUserButton" text="Add user" onAction="#addUser" />
+		<Button fx:id="changePasswordButton" text="Update Password" onAction="#changePassword"
 			disable="true" />
-		<Button fx:id="deleteButton" text="Delete Selected" onAction="#deleteSelected"
+		<Button fx:id="deleteUserButton" text="Delete Selected" onAction="#deleteSelected"
 			disable="true" />
 	</HBox>
 

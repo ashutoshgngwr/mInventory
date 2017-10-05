@@ -6,7 +6,7 @@
 <?import javafx.scene.text.*?>
 
 <GridPane fx:controller="com.github.ashutoshgngwr.minventory.AuthenticationController"
-	xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+	xmlns:fx="http://javafx.com/fxml" fx:id="root" alignment="center" hgap="10" vgap="10">
 
 	<Text fx:id="welcomeText" styleClass="header" text="Welcome"
 		GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" />
@@ -15,7 +15,7 @@
 		vgap="10" GridPane.columnIndex="0" GridPane.rowIndex="1"
 		GridPane.columnSpan="2">
 
-		<Label text="User Name:" GridPane.columnIndex="0"
+		<Label text="Username:" GridPane.columnIndex="0"
 			GridPane.rowIndex="1" />
 
 		<TextField fx:id="usernameField" promptText="Username"

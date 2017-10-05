@@ -21,16 +21,16 @@ public class ChangePasswordDialog extends Dialog<ButtonType> {
 		gridPane.setHgap(10);
 		gridPane.setVgap(10);
 
-		newPasswordField = new PasswordField();
-		newPasswordField.setPromptText("Your new password");
+		this.newPasswordField = new PasswordField();
+		this.newPasswordField.setPromptText("Your new password");
 
-		confirmPasswordField = new PasswordField();
-		confirmPasswordField.setPromptText("Confirm your new password");
+		this.confirmPasswordField = new PasswordField();
+		this.confirmPasswordField.setPromptText("Confirm your new password");
 
 		gridPane.add(new Label("New Password: "), 0, 0);
-		gridPane.add(newPasswordField, 1, 0);
+		gridPane.add(this.newPasswordField, 1, 0);
 		gridPane.add(new Label("Confirm Password: "), 0, 1);
-		gridPane.add(confirmPasswordField, 1, 1);
+		gridPane.add(this.confirmPasswordField, 1, 1);
 
 		getDialogPane().setContent(gridPane);
 
@@ -39,16 +39,16 @@ public class ChangePasswordDialog extends Dialog<ButtonType> {
 		});
 	}
 
-	public boolean matchPasswords() {
-		return newPasswordField.getText().trim().equals(confirmPasswordField.getText().trim());
+	public String getNewPassword() {
+		return this.newPasswordField.getText().trim();
 	}
 
-	public String getNewPassword() {
-		return newPasswordField.getText().trim();
+	public boolean matchPasswords() {
+		return this.newPasswordField.getText().trim().equals(confirmPasswordField.getText().trim());
 	}
 
 	public void reset() {
-		newPasswordField.setText(null);
-		confirmPasswordField.setText(null);
+		this.newPasswordField.setText(null);
+		this.confirmPasswordField.setText(null);
 	}
 }
